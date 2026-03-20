@@ -1,11 +1,10 @@
 const doc = new jsPDF();
 
-// ===== CARREGAR LOGO LOCAL =====
+// ===== LOGO =====
 const logoPath = path.join(__dirname, "icons/icon-192.png");
 const logoBase64 = fs.readFileSync(logoPath, { encoding: "base64" });
 const logo = `data:image/png;base64,${logoBase64}`;
 
-// ===== LOGO =====
 doc.addImage(logo, "PNG", 20, 10, 25, 25);
 
 // ===== CABEÇALHO =====
