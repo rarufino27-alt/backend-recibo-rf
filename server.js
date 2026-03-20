@@ -39,176 +39,184 @@ cpf
 // ===== PDF =====
 const doc = new jsPDF();
 
-// ===== LOGO =====
-let logo = null;
+// ===== CONFIG VISUAL =====
+const amarelo = [255, 180, 0];
+const cinzaLinha = 220;
+
+let y = 15;
+
+// ===== HEADER =====
+doc.setFillColor(...amarelo);
+doc.rect(0, 0, 210, 32, "F");
+
+// LOGO
 try{
 const logoPath = path.join(__dirname, "icons", "icon-192.png");
 if(fs.existsSync(logoPath)){
 const logoBase64 = fs.readFileSync(logoPath, { encoding: "base64" });
-logo = `data:image/png;base64,${logoBase64}`;
+const logo = `data:image/png;base64,${logoBase64}`;
+doc.addImage(logo, "PNG", 15, 6, 18, 18);
 }
-}catch(e){
-console.log("Erro logo:", e);
-}
+}catch(e){}
 
-// ===== CORES =====
-const amarelo = [255, 193, 7];
-
-// ===== HEADER =====
-doc.setFillColor(...amarelo);
-doc.rect(0, 0, 210, 35, "F");
-
-// logo (se existir)
-if(logo){
-doc.addImage(logo, "PNG", 20, 8, 20, 20);
-}
-
-// texto header
-doc.setTextColor(0, 0, 0);
-
-doc.setFontSize(16);
-doc.text("GRUPO DE VIAGENS RF", 50, 18);
-
-doc.setFontSize(10);
-doc.text("CNPJ: 58.615.336/0001-49", 50, 24);
-doc.text("Cabo de Santo Agostinho - PE", 50, 30);
-
-// recibo
+// TEXTO HEADER
+doc.setTextColor(0);
 doc.setFontSize(14);
-doc.text("RECIBO", 160, 18);
+doc.text("GRUPO DE VIAGENS RF", 40, 14);
+
+doc.setFontSize(9);
+doc.text("CNPJ: 58.615.336/0001-49", 40, 20);
+doc.text("Cabo de Santo Agostinho - PE", 40, 25);
+
+// RECIBO
+doc.setFontSize(13);
+doc.text("RECIBO", 155, 14);
 
 const numeroRecibo = Date.now().toString().slice(-6);
 
-doc.setFontSize(10);
-doc.text(`Nº ${numeroRecibo}`, 160, 24);
+doc.setFontSize(9);
+doc.text(`Nº ${numeroRecibo}`, 155, 20);
 
-// ===== CONTEÚDO =====
-let y = 45;
+// RESET POSIÇÃO
+y = 40;
 
-// data
-doc.setFontSize(10);
-doc.text(`Data: ${data}`, 20, y);
-doc.text(`Hora: ${hora}`, 120, y);
+// ===== DATA =====
+doc.setFontSize(9);
+doc.text(`Data: ${data}`, 15, y);
+doc.text(`Hora: ${hora}`, 150, y);
+
+y += 6;
+doc.setDrawColor(cinzaLinha);
+doc.line(15, y, 195, y);
 
 y += 10;
 
 // ===== ITINERÁRIO =====
-doc.setDrawColor(200);
-doc.rect(20, y, 170, 35);
-
-doc.setFontSize(12);
-doc.text("ITINERÁRIO", 25, y + 6);
-
-doc.setFontSize(10);
-
-let yIt = y + 12;
-
-doc.text(`Origem: ${origem}`, 25, yIt);
-yIt += 6;
-
-if(parada){
-doc.text(`Parada: ${parada}`, 25, yIt);
-yIt += 6;
-}
-
-doc.text(`Destino: ${destino}`, 25, yIt);
-yIt += 6;
-
-// horários
-doc.text(`Embarque: ${embarque || "-"}`, 25, yIt);
-yIt += 6;
-
-doc.text(`Desembarque: ${desembarque || "-"}`, 25, yIt);
-
-y += 45;
-
-// ===== DETALHAMENTO =====
-doc.setFontSize(12);
-doc.text("DETALHAMENTO", 20, y);
+doc.setFontSize(11);
+doc.text("ITINERÁRIO", 15, y);
 
 y += 6;
 
-// header tabela
-doc.setFillColor(...amarelo);
-doc.rect(20, y, 170, 8, "F");
+doc.setDrawColor(cinzaLinha);
+doc.rect(15, y, 180, 30);
 
-doc.setFontSize(10);
-doc.text("Descrição", 22, y + 5);
-doc.text("Valor (R$)", 150, y + 5);
+y += 7;
+
+doc.setFontSize(9);
+doc.text(`Origem: ${origem}`, 20, y);
+y += 5;
+
+if(parada){
+doc.text(`Parada: ${parada}`, 20, y);
+y += 5;
+}
+
+doc.text(`Destino: ${destino}`, 20, y);
+y += 5;
+
+doc.text(`Embarque: ${embarque || "-"}`, 20, y);
+y += 5;
+
+doc.text(`Desembarque: ${desembarque || "-"}`, 20, y);
+
+y += 15;
+
+// ===== DETALHAMENTO =====
+doc.setFontSize(11);
+doc.text("DETALHAMENTO", 15, y);
+
+y += 6;
+
+// HEADER TABELA
+doc.setFillColor(...amarelo);
+doc.rect(15, y, 180, 8, "F");
+
+doc.setFontSize(9);
+doc.text("Descrição", 18, y + 5);
+doc.text("Valor (R$)", 170, y + 5, { align: "right" });
 
 y += 10;
 
-// linhas
-const linhasDetalhes = detalhes ? detalhes.split("\n") : [];
+// LINHAS
+doc.setFontSize(9);
 
-linhasDetalhes.forEach(l => {
+const linhas = detalhes ? detalhes.split("\n") : [];
+
+linhas.forEach(l => {
 
 const partes = l.split(":");
 
 const desc = partes[0] || "";
 const val = partes[1] || "";
 
-doc.text(desc, 22, y);
-doc.text(val.trim(), 150, y);
+doc.text(desc, 18, y);
+doc.text(val.trim(), 170, y, { align: "right" });
 
 y += 6;
 
 });
 
-// linha final
-doc.line(20, y, 190, y);
+// LINHA FINAL
+doc.setDrawColor(cinzaLinha);
+doc.line(15, y, 195, y);
 
 y += 10;
 
 // ===== MOTORISTA (CONDICIONAL) =====
 if(motorista || placa || telefone || cpf){
 
-doc.rect(20, y, 170, 30);
+doc.setFontSize(11);
+doc.text("MOTORISTA", 15, y);
 
-doc.setFontSize(12);
-doc.text("MOTORISTA", 25, y + 6);
+y += 6;
 
-doc.setFontSize(10);
+doc.rect(15, y, 180, 26);
 
-let yMot = y + 12;
+y += 7;
+
+doc.setFontSize(9);
 
 if(motorista){
-doc.text(`Nome: ${motorista}`, 25, yMot);
-yMot += 6;
+doc.text(`Nome: ${motorista}`, 20, y);
+y += 5;
 }
 
 if(placa){
-doc.text(`Placa: ${placa}`, 25, yMot);
-yMot += 6;
+doc.text(`Placa: ${placa}`, 20, y);
+y += 5;
 }
 
 if(telefone){
-doc.text(`Telefone: ${telefone}`, 25, yMot);
-yMot += 6;
+doc.text(`Telefone: ${telefone}`, 20, y);
+y += 5;
 }
 
 if(cpf){
-doc.text(`CPF: ${cpf}`, 25, yMot);
+doc.text(`CPF: ${cpf}`, 20, y);
 }
 
-y += 40;
-
+y += 10;
 }
 
 // ===== TOTAL =====
 doc.setFillColor(...amarelo);
-doc.rect(20, y, 170, 12, "F");
+doc.rect(15, y, 180, 14, "F");
 
-doc.setFontSize(14);
-doc.text(`TOTAL: R$ ${total}`, 25, y + 8);
+doc.setFontSize(16);
+doc.text(`TOTAL: R$ ${total}`, 105, y + 9, { align: "center" });
 
 y += 20;
 
 // ===== RODAPÉ =====
-doc.setFontSize(9);
+doc.setFontSize(8);
 doc.setTextColor(120);
 
-doc.text("Documento gerado automaticamente - RF Driver", 20, y);
+doc.text(
+"Documento gerado automaticamente - GRUPO RF",
+105,
+y,
+{ align: "center" }
+);
 
 // ===== SALVAR PDF =====
 const nome = `recibo_${Date.now()}.pdf`;
