@@ -39,15 +39,15 @@ cpf
 // ===== PDF =====
 const doc = new jsPDF();
 
-// ===== CONFIG VISUAL =====
-const amarelo = [255, 180, 0];
-const cinzaLinha = 220;
+// ===== CONFIG =====
+const amarelo = [212, 160, 23];
+const cinza = 200;
 
 let y = 15;
 
 // ===== HEADER =====
 doc.setFillColor(...amarelo);
-doc.rect(0, 0, 210, 32, "F");
+doc.rect(0, 0, 210, 30, "F");
 
 // LOGO
 try{
@@ -55,91 +55,87 @@ const logoPath = path.join(__dirname, "icons", "icon-192.png");
 if(fs.existsSync(logoPath)){
 const logoBase64 = fs.readFileSync(logoPath, { encoding: "base64" });
 const logo = `data:image/png;base64,${logoBase64}`;
-doc.addImage(logo, "PNG", 15, 6, 18, 18);
+doc.addImage(logo, "PNG", 15, 6, 16, 16);
 }
 }catch(e){}
 
 // TEXTO HEADER
 doc.setTextColor(0);
-doc.setFontSize(14);
-doc.text("GRUPO DE VIAGENS RF", 40, 14);
+doc.setFontSize(13);
+doc.text("GRUPO DE VIAGENS RF", 38, 13);
 
-doc.setFontSize(9);
-doc.text("CNPJ: 58.615.336/0001-49", 40, 20);
-doc.text("Cabo de Santo Agostinho - PE", 40, 25);
+doc.setFontSize(8.5);
+doc.text("CNPJ: 58.615.336/0001-49", 38, 18);
+doc.text("Cabo de Santo Agostinho - PE", 38, 22);
 
 // RECIBO
-doc.setFontSize(13);
-doc.text("RECIBO", 155, 14);
+doc.setFontSize(12);
+doc.text("RECIBO", 155, 13);
 
 const numeroRecibo = Date.now().toString().slice(-6);
-
 doc.setFontSize(9);
-doc.text(`Nº ${numeroRecibo}`, 155, 20);
+doc.text(`Nº ${numeroRecibo}`, 155, 18);
 
-// RESET POSIÇÃO
-y = 40;
+// ===== LINHA =====
+y = 36;
+doc.setDrawColor(cinza);
+doc.line(15, y, 195, y);
+
+y += 8;
 
 // ===== DATA =====
 doc.setFontSize(9);
 doc.text(`Data: ${data}`, 15, y);
 doc.text(`Hora: ${hora}`, 150, y);
 
-y += 6;
-doc.setDrawColor(cinzaLinha);
+y += 8;
 doc.line(15, y, 195, y);
 
 y += 10;
 
 // ===== ITINERÁRIO =====
 doc.setFontSize(11);
+doc.setFont(undefined, "bold");
 doc.text("ITINERÁRIO", 15, y);
+
+doc.setFont(undefined, "normal");
 
 y += 6;
 
-doc.setDrawColor(cinzaLinha);
-doc.rect(15, y, 180, 30);
+doc.rect(15, y, 180, 32);
 
 y += 7;
 
 doc.setFontSize(9);
-doc.text(`Origem: ${origem}`, 20, y);
-y += 5;
 
-if(parada){
-doc.text(`Parada: ${parada}`, 20, y);
-y += 5;
-}
-
-doc.text(`Destino: ${destino}`, 20, y);
-y += 5;
-
-doc.text(`Embarque: ${embarque || "-"}`, 20, y);
-y += 5;
-
+doc.text(`Origem: ${origem}`, 20, y); y+=5;
+if(parada){ doc.text(`Parada: ${parada}`, 20, y); y+=5; }
+doc.text(`Destino: ${destino}`, 20, y); y+=5;
+doc.text(`Embarque: ${embarque || "-"}`, 20, y); y+=5;
 doc.text(`Desembarque: ${desembarque || "-"}`, 20, y);
 
-y += 15;
+y += 12;
 
 // ===== DETALHAMENTO =====
+doc.setFont(undefined, "bold");
 doc.setFontSize(11);
 doc.text("DETALHAMENTO", 15, y);
+
+doc.setFont(undefined, "normal");
 
 y += 6;
 
 // HEADER TABELA
 doc.setFillColor(...amarelo);
-doc.rect(15, y, 180, 8, "F");
+doc.rect(15, y, 180, 7, "F");
 
 doc.setFontSize(9);
 doc.text("Descrição", 18, y + 5);
 doc.text("Valor (R$)", 170, y + 5, { align: "right" });
 
-y += 10;
+y += 9;
 
 // LINHAS
-doc.setFontSize(9);
-
 const linhas = detalhes ? detalhes.split("\n") : [];
 
 linhas.forEach(l => {
@@ -152,60 +148,38 @@ const val = partes[1] || "";
 doc.text(desc, 18, y);
 doc.text(val.trim(), 170, y, { align: "right" });
 
-y += 6;
+y += 5;
 
 });
 
-// LINHA FINAL
-doc.setDrawColor(cinzaLinha);
+// linha final
+y += 2;
 doc.line(15, y, 195, y);
 
 y += 10;
 
-// ===== MOTORISTA (CONDICIONAL) =====
-if(motorista || placa || telefone || cpf){
-
-doc.setFontSize(11);
-doc.text("MOTORISTA", 15, y);
-
-y += 6;
-
-doc.rect(15, y, 180, 26);
-
-y += 7;
-
-doc.setFontSize(9);
-
-if(motorista){
-doc.text(`Nome: ${motorista}`, 20, y);
-y += 5;
-}
-
-if(placa){
-doc.text(`Placa: ${placa}`, 20, y);
-y += 5;
-}
-
-if(telefone){
-doc.text(`Telefone: ${telefone}`, 20, y);
-y += 5;
-}
-
-if(cpf){
-doc.text(`CPF: ${cpf}`, 20, y);
-}
-
-y += 10;
-}
-
 // ===== TOTAL =====
 doc.setFillColor(...amarelo);
-doc.rect(15, y, 180, 14, "F");
+doc.rect(15, y, 180, 12, "F");
 
-doc.setFontSize(16);
-doc.text(`TOTAL: R$ ${total}`, 105, y + 9, { align: "center" });
+doc.setFontSize(14);
+doc.setFont(undefined, "bold");
 
-y += 20;
+doc.text(`TOTAL: R$ ${total}`, 105, y + 8, { align: "center" });
+
+doc.setFont(undefined, "normal");
+
+y += 22;
+
+// ===== ASSINATURA =====
+doc.line(60, y, 150, y);
+
+y += 5;
+
+doc.setFontSize(9);
+doc.text("Responsável pela operação", 105, y, { align: "center" });
+
+y += 10;
 
 // ===== RODAPÉ =====
 doc.setFontSize(8);
