@@ -36,6 +36,7 @@ telefone,
 cpf
 } = req.body;
 
+console.log("REQ BODY:", req.body);
 // ===== PDF =====
 const doc = new jsPDF();
 
@@ -136,17 +137,19 @@ doc.text("Valor (R$)", 170, y + 5, { align: "right" });
 y += 12;
 
 // LINHAS
-const linhas = detalhes ? detalhes.split("\n") : [];
+const linhas = (detalhes && typeof detalhes === "string") 
+  ? detalhes.split("\n") 
+  : [];
 
 linhas.forEach(l => {
 
 const partes = l.split(":");
 
 const desc = partes[0] || "";
-const val = partes[1] || "";
+const val = (partes[1] || "").trim();
 
 doc.text(desc, 18, y);
-doc.text(val.trim(), 170, y, { align: "right" });
+doc.text(val, 170, y, { align: "right" });
 
 y += 5;
 
@@ -191,7 +194,8 @@ doc.text(
 y,
 { align: "center" }
 );
-
+console.log("PDF GERADO OK");
+  
 // ===== SALVAR PDF =====
 const nome = `recibo_${Date.now()}.pdf`;
 const caminho = path.join(pasta, nome);
